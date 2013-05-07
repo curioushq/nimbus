@@ -58,6 +58,7 @@
     // operation.
     request.delegate = nil;
   }
+  self.lastPathToNetworkImage = nil;
   [self.operation cancel];
 }
 
@@ -178,18 +179,20 @@
                           expiresAfter: expirationDate];
   }
 
-  if (nil != image) {
-    // Display the new image.
-    [self setImage:image];
-
-  } else {
-    [self setImage:self.initialImage];
-  }
-
   self.operation = nil;
 
-  if ([self.delegate respondsToSelector:@selector(networkImageView:didLoadImage:)]) {
-    [self.delegate networkImageView:self didLoadImage:self.image];
+  if ([cacheIdentifier isEqualToString:selflastPathToNetworkImage]) {
+    if (nil != image) {
+      // Display the new image.
+      [self setImage:image];
+
+    } else {
+      [self setImage:self.initialImage];
+    }
+
+    if ([self.delegate respondsToSelector:@selector(networkImageView:didLoadImage:)]) {
+      [self.delegate networkImageView:self didLoadImage:self.image];
+    }
   }
 
   [self networkImageViewDidLoadImage:image];
@@ -344,6 +347,7 @@
       displaySize = self.frame.size;
     }
     
+    self.lastPathToNetworkImage = pathToNetworkImage;
     UIImage* image = nil;
     
     // Attempt to load the image from memory first.

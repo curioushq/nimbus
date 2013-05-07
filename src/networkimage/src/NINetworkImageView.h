@@ -84,6 +84,7 @@ typedef enum {
 
 @property (nonatomic, readwrite, NI_STRONG) NIImageMemoryCache* imageMemoryCache;    // Default: [Nimbus imageMemoryCache]
 @property (nonatomic, readwrite, NI_STRONG) NSOperationQueue* networkOperationQueue; // Default: [Nimbus networkOperationQueue]
+@property (nonatomic, readwrite, NI_STRONG) NSString *lastPathToNetworkImage;
 
 @property (nonatomic, readwrite, assign) NSTimeInterval maxAge;     // Default: 0
 
