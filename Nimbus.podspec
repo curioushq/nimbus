@@ -103,6 +103,11 @@ Pod::Spec.new do |s|
     end
   end
 
+  s.subspec 'TextField' do |textfield|
+    textfield.source_files = 'src/textfield/src'
+    textfield.dependency 'Nimbus/Core'
+  end
+
   s.subspec 'WebController' do |web_controller|
     web_controller.source_files = 'src/webcontroller/src'
     web_controller.resource     = 'src/webcontroller/resources/NimbusWebController.bundle'
