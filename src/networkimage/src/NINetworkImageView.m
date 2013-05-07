@@ -181,7 +181,7 @@
 
   self.operation = nil;
 
-  if ([cacheIdentifier isEqualToString:selflastPathToNetworkImage]) {
+  if ([cacheIdentifier isEqualToString:self.lastPathToNetworkImage]) {
     if (nil != image) {
       // Display the new image.
       [self setImage:image];
