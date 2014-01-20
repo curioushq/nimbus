@@ -316,7 +316,19 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-- (void)setPathToNetworkImage:(NSString *)pathToNetworkImage forDisplaySize:(CGSize)displaySize contentMode:(UIViewContentMode)contentMode cropRect:(CGRect)cropRect {
+- (void)setPathToNetworkImage:(NSString *)pathToNetworkImage forDisplaySize:(CGSize)displaySize contentMode:(UIViewContentMode)contentMode cropRect:(CGRect)cropRect
+{
+    [self setPathToNetworkImage:pathToNetworkImage
+                 forDisplaySize:CGSizeZero
+                    contentMode:contentMode
+                       cropRect:CGRectZero
+                 expirationDate:nil];
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+- (void)setPathToNetworkImage:(NSString *)pathToNetworkImage forDisplaySize:(CGSize)displaySize contentMode:(UIViewContentMode)contentMode cropRect:(CGRect)cropRect expirationDate:(NSDate *)expirationDate
+{
   [self cancelOperation];
 
   if (NIIsStringWithAnyText(pathToNetworkImage)) {
@@ -393,7 +405,7 @@
                               displaySize:displaySize
                               contentMode:contentMode
                              scaleOptions:self.scaleOptions
-                           expirationDate:nil];
+                           expirationDate:expirationDate];
 
        } failure:^(NSURLRequest *errorRequest, NSHTTPURLResponse *response, NSError *error) {
          [self _didFailToLoadWithError:error];
