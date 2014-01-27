@@ -19,6 +19,7 @@
 #import "NIDataStructures.h"
 #import "NIDebuggingTools.h"
 #import "NIPreprocessorMacros.h"
+#import <CommonCrypto/CommonDigest.h>
 
 #import <UIKit/UIKit.h>
 
@@ -90,6 +91,26 @@
 
 @synthesize cacheMap        = _cacheMap;
 @synthesize lruCacheObjects = _lruCacheObjects;
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+static NSString *md5Hex( NSString *str )
+{
+    const char *cStr = [str UTF8String];
+    unsigned char result[CC_MD5_DIGEST_LENGTH];
+    CC_MD5( cStr, strlen(cStr), result );
+    return [NSString
+            stringWithFormat:@"%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
+            result[0], result[1],
+            result[2], result[3],
+            result[4], result[5],
+            result[6], result[7],
+            result[8], result[9],
+            result[10], result[11],
+            result[12], result[13],
+            result[14], result[15]
+            ];
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -195,6 +216,21 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+- (NSURL *)cachesFolderURL
+{
+    NSURL *cachesURL = [[[NSFileManager defaultManager] URLsForDirectory:NSCachesDirectory
+                                                               inDomains:NSUserDomainMask] lastObject];
+    cachesURL = [cachesURL URLByAppendingPathComponent:@"NimbusImages"];
+    if (![cachesURL checkResourceIsReachableAndReturnError:nil])
+    {
+        [[NSFileManager defaultManager] createDirectoryAtURL:cachesURL withIntermediateDirectories:NO attributes:nil error:nil];
+    }
+    
+    return cachesURL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark -
 #pragma mark Subclassing
@@ -232,7 +268,15 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-- (void)storeObject:(id)object withName:(NSString *)name expiresAfter:(NSDate *)expirationDate {
+- (void)storeObject:(id)object withName:(NSString *)name expiresAfter:(NSDate *)expirationDate
+{
+  [self storeObject:object withName:name expiresAfter:expirationDate usingDisk:NO];
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+- (void)storeObject:(id)object withName:(NSString *)name expiresAfter:(NSDate *)expirationDate usingDisk:(BOOL)usingDisk
+{
   // Don't store nil objects in the cache.
   if (nil == object) {
     return;
@@ -261,13 +305,35 @@
 
   // Commit the changes to the cache.
   [self setCacheInfo:info forName:name];
+    
+  if (usingDisk)
+  {
+      if (!expirationDate)
+      {
+          expirationDate = [NSDate dateWithTimeIntervalSinceNow:60 * 60 * 24 * 2];
+      }
+      NSDictionary *infoDict = @{ @"name" : name,
+                                  @"expirationDate" : expirationDate,
+                                  @"object" : UIImagePNGRepresentation(object) };
+
+      NSURL *cachedURL = [[[self cachesFolderURL] URLByAppendingPathComponent:md5Hex(name)] URLByAppendingPathExtension:@"xml"];
+      [infoDict writeToURL:cachedURL atomically:YES];
+  }
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-- (id)objectWithName:(NSString *)name {
-  NIMemoryCacheInfo* info = [self cacheInfoForName:name];
+- (id)objectWithName:(NSString *)name
+{
+  return [self objectWithName:name usingDisk:NO];
+}
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+- (id)objectWithName:(NSString *)name usingDisk:(BOOL)usingDisk
+{
+  NIMemoryCacheInfo* info = [self cacheInfoForName:name];
+    
   id object = nil;
 
   if (nil != info) {
@@ -279,6 +345,29 @@
       [self updateAccessTimeForInfo:info];
 
       object = info.object;
+    }
+  }
+  else if (usingDisk)
+  {
+    NSURL *cachedURL = [[[self cachesFolderURL] URLByAppendingPathComponent:md5Hex(name)] URLByAppendingPathExtension:@"xml"];
+    if ([cachedURL checkResourceIsReachableAndReturnError:nil])
+    {
+      NSDictionary *infoDict = [NSDictionary dictionaryWithContentsOfURL:cachedURL];
+        
+      if ([[NSDate date] timeIntervalSinceDate:infoDict[@"expirationDate"]] < 0)
+      {
+        NIMemoryCacheInfo* info = [[NIMemoryCacheInfo alloc] init];
+        info.name = infoDict[@"name"];
+        info.object = [UIImage imageWithData:infoDict[@"object"]];
+        info.expirationDate = infoDict[@"expirationDate"];
+        [self setCacheInfo:info forName:info.name];
+
+        object = info.object;
+      }
+      else
+      {
+        [[NSFileManager defaultManager] removeItemAtURL:cachedURL error:nil];
+      }
     }
   }
 
@@ -339,8 +428,15 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-- (void)removeObjectWithName:(NSString *)name {
+- (void)removeObjectWithName:(NSString *)name
+{
   [self removeCacheInfoForName:name];
+
+  NSURL *cachedURL = [[[self cachesFolderURL] URLByAppendingPathComponent:name] URLByAppendingPathExtension:@"xml"];
+  if ([cachedURL checkResourceIsReachableAndReturnError:nil])
+  {
+    [[NSFileManager defaultManager] removeItemAtURL:cachedURL error:nil];
+  }
 }
 
 

@@ -77,6 +77,8 @@
 
   self.imageMemoryCache = [Nimbus imageMemoryCache];
   self.networkOperationQueue = [Nimbus networkOperationQueue];
+    
+  self.usingDiskStorage = YES;
 }
 
 
@@ -176,7 +178,8 @@
     // Store the image in the memory cache, possibly with an expiration date.
     [self.imageMemoryCache storeObject: image
                               withName: cacheKey
-                          expiresAfter: expirationDate];
+                          expiresAfter: expirationDate
+                             usingDisk: self.usingDiskStorage];
   }
 
   self.operation = nil;
@@ -275,7 +278,8 @@
   [self setPathToNetworkImage: pathToNetworkImage
                forDisplaySize: CGSizeZero
                   contentMode: self.contentMode
-                     cropRect: CGRectZero];
+                     cropRect: CGRectZero
+               expirationDate: nil];
 }
 
 
@@ -284,7 +288,8 @@
   [self setPathToNetworkImage: pathToNetworkImage
                forDisplaySize: displaySize
                   contentMode: self.contentMode
-                     cropRect: CGRectZero];
+                     cropRect: CGRectZero
+               expirationDate: nil];
 }
 
 
@@ -293,7 +298,8 @@
   [self setPathToNetworkImage: pathToNetworkImage
                forDisplaySize: displaySize
                   contentMode: contentMode
-                     cropRect: CGRectZero];
+                     cropRect: CGRectZero
+               expirationDate: nil];
 }
 
 
@@ -302,7 +308,8 @@
   [self setPathToNetworkImage: pathToNetworkImage
                forDisplaySize: CGSizeZero
                   contentMode: self.contentMode
-                     cropRect: cropRect];
+                     cropRect: cropRect
+               expirationDate: nil];
 }
 
 
@@ -311,7 +318,8 @@
   [self setPathToNetworkImage: pathToNetworkImage
                forDisplaySize: CGSizeZero
                   contentMode: contentMode
-                     cropRect: CGRectZero];
+                     cropRect: CGRectZero
+               expirationDate: nil];
 }
 
 
@@ -369,7 +377,7 @@
                                         imageSize:displaySize
                                       contentMode:contentMode
                                      scaleOptions:self.scaleOptions];
-      image = [self.imageMemoryCache objectWithName:cacheKey];
+      image = [self.imageMemoryCache objectWithName:cacheKey usingDisk:self.usingDiskStorage];
     }
 
     if (nil != image) {

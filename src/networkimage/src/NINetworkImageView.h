@@ -88,6 +88,8 @@ typedef enum {
 
 @property (nonatomic, readwrite, assign) NSTimeInterval maxAge;     // Default: 0
 
+@property (nonatomic, getter = isUsingDiskStorage) BOOL usingDiskStorage; //Default: YES
+
 #pragma mark Requesting a Network Image
 
 - (void)setPathToNetworkImage:(NSString *)pathToNetworkImage;

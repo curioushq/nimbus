@@ -44,12 +44,14 @@
 
 - (void)storeObject:(id)object withName:(NSString *)name;
 - (void)storeObject:(id)object withName:(NSString *)name expiresAfter:(NSDate *)expirationDate;
+- (void)storeObject:(id)object withName:(NSString *)name expiresAfter:(NSDate *)expirationDate usingDisk:(BOOL)usingDisk;
 
 - (void)removeObjectWithName:(NSString *)name;
 - (void)removeAllObjectsWithPrefix:(NSString *)prefix;
 - (void)removeAllObjects;
 
 - (id)objectWithName:(NSString *)name;
+- (id)objectWithName:(NSString *)name usingDisk:(BOOL)usingDisk;
 - (BOOL)containsObjectWithName:(NSString *)name;
 - (NSDate *)dateOfLastAccessWithName:(NSString *)name;
 
