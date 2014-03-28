@@ -96,11 +96,6 @@ Pod::Spec.new do |s|
   s.subspec 'Operations' do |operations|
     operations.source_files = 'src/operations/src'
     operations.dependency 'Nimbus/Core'
-
-    operations.subspec 'JSON' do |json|
-      json.source_files = 'src/operations/src_JSONKit'
-      json.dependency 'JSONKit'
-    end
   end
 
   s.subspec 'TextField' do |textfield|
