@@ -231,7 +231,7 @@
   [self _didFinishLoadingWithImage:operation.imageCroppedAndSizedForDisplay
                    cacheIdentifier:operation.cacheIdentifier
                        displaySize:operation.imageDisplaySize
-                       contentMode:operation.imageContentMode
+                       contentMode:operation.nimbusImageContentMode
                       scaleOptions:operation.scaleOptions
                     expirationDate:nil];
 }
@@ -479,12 +479,12 @@
       // Unable to load the image from memory, so let's fire off the operation now.
       operation.delegate = self;
 
-      operation.imageCropRect = cropRect;
+      operation.nimbusImageCropRect = cropRect;
       operation.scaleOptions = self.scaleOptions;
       operation.interpolationQuality = self.interpolationQuality;
       if (self.sizeForDisplay) {
         operation.imageDisplaySize = displaySize;
-        operation.imageContentMode = contentMode;
+        operation.nimbusImageContentMode = contentMode;
       }
 
       self.operation = operation;
